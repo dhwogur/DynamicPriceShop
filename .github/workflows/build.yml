@@ -1,0 +1,57 @@
+# .github/workflows/build.yml
+name: Build & Release
+
+# 언제 실행할지 지정
+on:
+  # main 브랜치에 푸시될 때 자동 실행
+  push:
+    branches: [ main ]
+  # PR도 같이 검사하고 싶다면 아래를 추가
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    # GitHub가 제공하는 Ubuntu 최신 이미지 사용
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ 레포 코드 받아오기
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ JDK 17 설치
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin    # AdoptOpenJDK/Temurin 중 선택
+          java-version: '17'
+
+      # 3️⃣ Maven 로컬 레포 캐시 (빌드 속도 향상)
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2                # Maven이 의존성을 저장하는 경로
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
+
+      # 4️⃣ 실제 빌드
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml   # -B = batch mode (로그 깔끔)
+
+      # 5️⃣ 빌드된 JAR을 아티팩트(artifact)로 업로드
+      - name: Upload JAR as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DynamicPriceShop-jar          # 다운로드 파일 이름
+          path: target/DynamicPriceShop-*.jar   # Maven이 만든 JAR 경로
+
+      # ---------------------------------------------------------
+      # 6️⃣ (선택) 태그가 붙은 커밋이면 Release 자동 생성
+      # ---------------------------------------------------------
+      - name: Create GitHub Release (if tag)
+        if: startsWith(github.ref, 'refs/tags/')   # 태그 푸시만 실행
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/DynamicPriceShop-*.jar   # Release에 포함될 파일
