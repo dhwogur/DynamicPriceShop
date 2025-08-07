@@ -1,0 +1,6 @@
+/workspaces/DynamicPriceShop/src/main/java/com/yourname/dynamicpriceshop/DynamicPriceShop.java
+/workspaces/DynamicPriceShop/src/main/java/com/yourname/dynamicpriceshop/ShopCommand.java
+/workspaces/DynamicPriceShop/src/main/java/com/yourname/dynamicpriceshop/ShopListener.java
+/workspaces/DynamicPriceShop/src/main/java/com/yourname/dynamicpriceshop/command/HelloCommand.java
+/workspaces/DynamicPriceShop/src/main/java/com/yourname/dynamicpriceshop/price/ItemPrice.java
+/workspaces/DynamicPriceShop/src/main/java/com/yourname/dynamicpriceshop/price/PriceManager.java

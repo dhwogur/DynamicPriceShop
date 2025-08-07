@@ -3,60 +3,138 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!-- ============================================================= -->
+    <!-- 기본 메타데이터 -->
+    <!-- ============================================================= -->
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.yourname.dynamicpriceshop</groupId>
+    <groupId>com.yourname</groupId>
     <artifactId>DynamicPriceShop</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
     <name>DynamicPriceShop</name>
+    <description>A Minecraft plugin that offers a dynamically priced shop.</description>
+    <url>https://github.com/yourname/DynamicPriceShop</url>
 
     <properties>
-        <java.version>17</java.version>
-        <!-- Paper 1.20.4 (스냅샷) 사용 -->
-        <spigot.version>1.20.4-R0.1-SNAPSHOT</spigot.version>
+        <!-- Java 17 (Paper 1.20.4 이상) -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
+        <!-- Spigot / Paper 리포지토리 버전 -->
+        <paper.api.version>1.20.4-R0.1-SNAPSHOT</paper.api.version>
+
+        <!-- Shade 플러그인 설정 -->
+        <shade.plugin.version>3.5.0</shade.plugin.version>
     </properties>
 
+    <!-- ============================================================= -->
+    <!-- Repository : Paper(또는 Spigot) 스냅샷 저장소 -->
+    <!-- ============================================================= -->
     <repositories>
+        <!-- Paper 공식 Maven repo -->
+        <repository>
+            <id>papermc-repo</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+
+        <!-- Spigot snapshot repo (필요시) -->
         <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+
         <repository>
-            <id>codemc-repo</id>
-            <url>https://repo.codemc.io/repository/maven-public/</url>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </repository>
+
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
         </repository>
     </repositories>
 
+    <!-- ============================================================= -->
+    <!-- 의존성 -->
+    <!-- ============================================================= -->
     <dependencies>
+        <!-- Paper API (provided = 서버에 이미 존재) -->
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>${spigot.version}</version>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>${paper.api.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- 나중에 Vault를 쓰려면 주석 해제 -->
-        <!--
+
+        <!-- Vault API (전역 의존성, shading 후 포함) -->
         <dependency>
-            <groupId>net.milkbowl.vault</groupId>
+            <groupId>com.github.MilkBowl</groupId>
             <artifactId>VaultAPI</artifactId>
             <version>1.7</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- (선택) lombok – 개발 편의를 위해 사용한다면 -->
+        <!--
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.34</version>
             <scope>provided</scope>
         </dependency>
         -->
     </dependencies>
 
+    <!-- ============================================================= -->
+    <!-- Build plugins : 컴파일 + Shade (의존성 병합) -->
+    <!-- ============================================================= -->
     <build>
         <plugins>
+            <!-- Maven Compiler (Java 17) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.13.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <encoding>UTF-8</encoding>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
+            </plugin>
+
+            <!-- Maven Shade – 의존성을 한 파일에 병합 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${shade.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <!-- 원본 JAR와 별개로 shade‑generated 파일에 -shaded 접미사 붙임 -->
+                            <shadedClassifierName>shaded</shadedClassifierName>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+
+                            <!-- Vault는 포함시키고, Spigot/Paper API는 제외 (서버에 이미 있음) -->
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>org/spigotmc/**</exclude>
+                                        <exclude>io/papermc/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
+
 </project>

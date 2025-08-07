@@ -1,0 +1,6 @@
+com/yourname/dynamicpriceshop/ShopCommand.class
+com/yourname/dynamicpriceshop/ShopListener.class
+com/yourname/dynamicpriceshop/price/PriceManager.class
+com/yourname/dynamicpriceshop/DynamicPriceShop.class
+com/yourname/dynamicpriceshop/command/HelloCommand.class
+com/yourname/dynamicpriceshop/price/ItemPrice.class
